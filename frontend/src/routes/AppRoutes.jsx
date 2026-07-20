@@ -20,6 +20,9 @@ import RequireAuth from '../components/RequireAuth';
 // Admin
 import AdminLayout from '../pages/app/admin/AdminLayout';
 import RequireSuperAdmin from '../pages/app/admin/RequireSuperAdmin';
+import ClubsManager from '../pages/app/admin/ClubsManager';
+import SystemLogs from '../pages/app/admin/SystemLogs';
+import AdminDashboard from '../pages/app/admin/AdminDashboard';
 
 export default function AppRoutes() {
   return (
@@ -47,9 +50,9 @@ export default function AppRoutes() {
           
           {/* Admin Routes */}
           <Route path="/admin" element={<RequireSuperAdmin><AdminLayout /></RequireSuperAdmin>}>
-            <Route index element={<div>Admin Dashboard</div>} />
-            <Route path="clubs" element={<div>Clubs Manager</div>} />
-            <Route path="logs" element={<div>Audit Logs</div>} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="clubs" element={<ClubsManager />} />
+            <Route path="logs" element={<SystemLogs />} />
           </Route>
         </Route>
       </Routes>
