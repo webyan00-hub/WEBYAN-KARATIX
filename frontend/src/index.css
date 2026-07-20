@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-karatix-bg: #FFFFFF;
+  --color-karatix-text: #6B6375;
+  --color-karatix-text-h: #08060D;
+  --color-karatix-border: #E5E4E7;
+  --color-karatix-code-bg: #F4F3EC;
+  --color-karatix-accent: #2563EB;
+  --color-karatix-accent-bg: rgba(37, 99, 235, 0.1);
+  --color-karatix-accent-border: rgba(37, 99, 235, 0.5);
+  --color-karatix-surface: #171717;
+  --color-karatix-secondary: #A3A3A3;
+  --color-karatix-dark-bg: #16171D;
+  --color-karatix-dark-text: #9CA3AF;
+  --color-karatix-dark-text-h: #F3F4F6;
+  --color-karatix-dark-border: #2E303A;
+  --color-karatix-dark-code-bg: #1F2028;
+  --color-karatix-dark-accent: #60A5FA;
+  --color-karatix-dark-accent-bg: rgba(96, 165, 250, 0.15);
+  --color-karatix-dark-accent-border: rgba(96, 165, 250, 0.5);
+
+  --font-display: "Oswald", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "ui-monospace", Consolas, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-karatix-bg text-karatix-text font-sans antialiased;
+  }
+  
+  h1, h2, h3 {
+    @apply font-display text-karatix-text-h;
+  }
+}
