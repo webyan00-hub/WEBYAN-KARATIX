@@ -21,7 +21,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const { user } = await signIn(form.email, form.password);
+      await signIn(form.email, form.password);
+      
+      // Récupérer explicitement l'utilisateur connecté
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       
       // Vérifier si c'est un Super Admin
       const { data: admin } = await supabase
