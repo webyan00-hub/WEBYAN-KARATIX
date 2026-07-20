@@ -17,6 +17,9 @@ import PointagePage from '../pages/app/dashboard/attendance/pointage/PointagePag
 import AttendanceHistoryPage from '../pages/app/dashboard/attendance/history/AttendanceHistoryPage';
 import CreateClubPage from '../pages/app/CreateClubPage';
 import RequireAuth from '../components/RequireAuth';
+// Admin
+import AdminLayout from '../pages/app/admin/AdminLayout';
+import RequireSuperAdmin from '../pages/app/admin/RequireSuperAdmin';
 
 export default function AppRoutes() {
   return (
@@ -41,6 +44,13 @@ export default function AppRoutes() {
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           <Route path="/create-club" element={<CreateClubPage />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<RequireSuperAdmin><AdminLayout /></RequireSuperAdmin>}>
+            <Route index element={<div>Admin Dashboard</div>} />
+            <Route path="clubs" element={<div>Clubs Manager</div>} />
+            <Route path="logs" element={<div>Audit Logs</div>} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
