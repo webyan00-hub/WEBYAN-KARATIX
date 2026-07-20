@@ -10,7 +10,20 @@ export default function RequireAuth() {
 
   useEffect(() => {
     if (user) {
-      const checkClub = async () => {
+      const checkPermissions = async () => {
+        // Vérifier si Admin
+        const { data: admin } = await supabase
+          .from('system_admins')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (admin?.role === 'super_admin') {
+            setHasClub(true); // On simule qu'il a un accès pour éviter la redirection
+            return;
+        }
+
+        // Sinon vérifier le club
         const { data, error } = await supabase
           .from('clubs')
           .select('id')
@@ -19,7 +32,7 @@ export default function RequireAuth() {
         
         setHasClub(!!data);
       };
-      checkClub();
+      checkPermissions();
     }
   }, [user]);
 
