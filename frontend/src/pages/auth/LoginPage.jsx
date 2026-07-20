@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -20,8 +21,20 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await signIn(form.email, form.password);
-      navigate('/dashboard');
+      const { user } = await signIn(form.email, form.password);
+      
+      // Vérifier si c'est un Super Admin
+      const { data: admin } = await supabase
+        .from('system_admins')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (admin && admin.role === 'super_admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Connexion échouée');
     } finally {
