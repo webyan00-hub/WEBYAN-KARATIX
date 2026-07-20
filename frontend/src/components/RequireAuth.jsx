@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 export default function RequireAuth() {
   const { user, loading } = useAuth();
   const [hasClub, setHasClub] = useState(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +20,8 @@ export default function RequireAuth() {
           .single();
         
         if (admin?.role === 'super_admin') {
-            setHasClub(true); // On simule qu'il a un accès pour éviter la redirection
+            setIsSuperAdmin(true);
+            setHasClub(true); // Autorisé à passer
             return;
         }
 
@@ -42,13 +44,13 @@ export default function RequireAuth() {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // Si l'utilisateur n'a pas de club et n'est pas déjà sur la page de création, on le redirige
-  if (!hasClub && window.location.pathname !== '/create-club') {
+  // Si l'utilisateur n'est pas admin, n'a pas de club et n'est pas déjà sur la page de création, on le redirige
+  if (!isSuperAdmin && !hasClub && window.location.pathname !== '/create-club') {
     return <Navigate to="/create-club" replace />;
   }
 
   // Si l'utilisateur a un club, mais qu'il est sur la page de création, on le renvoie au dashboard
-  if (hasClub && window.location.pathname === '/create-club') {
+  if (!isSuperAdmin && hasClub && window.location.pathname === '/create-club') {
     return <Navigate to="/dashboard" replace />;
   }
 
