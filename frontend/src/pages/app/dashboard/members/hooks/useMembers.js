@@ -8,7 +8,11 @@ export const useMembers = (filters = {}) => {
 
   const { data: members = [], isLoading: loading, error } = useQuery({
     queryKey: ['members', club?.id, filters],
-    queryFn: () => membersService.getAllMembers(club.id, filters),
+    queryFn: async () => {
+        const data = await membersService.getAllMembers(club.id, filters);
+        console.log("Membres reçus après filtre:", data);
+        return data;
+    },
     enabled: !!club?.id,
   });
 
