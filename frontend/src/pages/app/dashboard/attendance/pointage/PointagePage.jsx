@@ -88,7 +88,7 @@ export default function PointagePage() {
             <label className="block text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 md:mb-2">Sélectionner la séance</label>
             <select className="w-full p-3.5 md:p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 font-semibold text-slate-800 text-sm md:text-base" onChange={e => {
                 const s = sessions.find(sess => sess.id === e.target.value);
-                if(s) loadAttendance(s);
+                setSelectedSession(s || null);
             }}>
                 <option value="">Choisir un créneau...</option>
                 {sessions.map(s => <option key={s.id} value={s.id}>{s.name} • {s.start_time.slice(0,5)}</option>)}
