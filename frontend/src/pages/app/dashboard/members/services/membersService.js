@@ -15,7 +15,7 @@ export const membersService = {
       query = query.eq('grade', filters.gradeFilter);
     }
     if (filters.genderFilter) {
-      query = query.eq('gender', filters.genderFilter);
+      query = query.ilike('gender', filters.genderFilter);
     }
 
     const { data, error } = await query;

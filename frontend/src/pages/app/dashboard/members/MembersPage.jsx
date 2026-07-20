@@ -105,7 +105,7 @@ export default function MembersPage() {
           />
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4 w-full max-w-xs md:max-w-none md:w-auto">
+        <div className="flex flex-col md:flex-row gap-4 w-full">
           <select 
             value={gradeFilter} 
             onChange={(e) => setGradeFilter(e.target.value)}
