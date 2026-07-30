@@ -79,7 +79,7 @@ export default function LoginPage() {
       >
         {/* Branding & En-tête */}
         <div className="flex flex-col items-center gap-4 mb-10">
-          <img src="/img/logo.png" alt="KARATIX" className="w-[80px] h-[80px] object-contain" />
+          <img src="/logo.png" alt="KARATIX" className="w-[80px] h-[80px] object-contain" />
           <div className="text-center">
             <h2 className="text-3xl font-black tracking-tighter mb-2" style={{ color: theme.foreground }}>Connexion</h2>
             <p className="text-sm font-medium" style={{ color: theme.muted }}>Accédez à votre espace Dojo.</p>

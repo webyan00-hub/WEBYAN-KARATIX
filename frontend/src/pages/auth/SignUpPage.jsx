@@ -45,7 +45,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-[440px] bg-white/80 backdrop-blur-xl border border-slate-200/60 p-10 rounded-[28px] shadow-2xl shadow-blue-500/10">
         {/* Branding & En-tête */}
         <Link to="/" className="flex flex-col items-center gap-4 mb-10">
-          <img src="/img/logo.png" alt="KARATIX" className="w-[100px] h-[100px] object-contain" />
+          <img src="/logo.png" alt="KARATIX" className="w-[100px] h-[100px] object-contain" />
           <div className="text-center">
             <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter mb-2">Inscription</h2>
             <p className="text-sm text-[#64748B]">Rejoignez la communauté KARATIX.</p>

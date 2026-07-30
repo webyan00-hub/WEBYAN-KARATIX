@@ -20,7 +20,7 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-3">
-          <img src="/img/logo.png" alt="KARATIX" className="w-[50px] h-[50px] object-contain" />
+          <img src="/logo.png" alt="KARATIX" className="w-[50px] h-[50px] object-contain" />
           <span className="text-2xl font-display font-black tracking-tighter" style={{ color: theme.foreground }}>
             KARAT<span style={{ color: theme.primary }}>IX</span>
           </span>

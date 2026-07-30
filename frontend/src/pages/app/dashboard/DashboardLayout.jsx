@@ -96,7 +96,7 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <main className="flex-1 pb-20 md:pb-0">
         <header className="bg-white border-b border-slate-100 py-4 px-4 flex items-center justify-between sticky top-0 z-40 md:hidden">
-            <img src="/img/Logo.png" alt="Karatix Logo" className="h-8" />
+            <img src="/logo.png" alt="Karatix Logo" className="h-8" />
             <h1 className="font-bold text-text-main text-sm truncate max-w-[60%]">{settings?.club_name || 'KARATIX'}</h1>
         </header>
 
