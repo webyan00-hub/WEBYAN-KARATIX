@@ -22,37 +22,37 @@ export default function MemberDetailsModal({ isOpen, onClose, member, onDelete, 
   );
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6">
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 10 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
-        className="bg-white rounded-3xl w-full max-w-[800px] shadow-2xl flex flex-col max-h-[90vh]"
+        className="bg-white rounded-3xl w-full max-w-[800px] shadow-2xl flex flex-col max-h-[90vh] my-auto"
       >
         {/* Header */}
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center">
-          <div className="flex items-center gap-6">
+        <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center">
+          <div className="flex items-center gap-4 md:gap-6">
             <img 
               src={member.photo_url ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/member-photos/${member.photo_url}` : '/placeholder.png'} 
-              className="w-20 h-20 rounded-2xl object-cover shadow-sm"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover shadow-sm"
               alt={`${member.first_name} ${member.last_name}`}
             />
             <div>
-              <h2 className="text-3xl font-black text-slate-950 tracking-tighter">
+              <h2 className="text-xl md:text-3xl font-black text-slate-950 tracking-tighter truncate max-w-[180px] md:max-w-none">
                 {member.last_name.toUpperCase()} {member.first_name}
               </h2>
-              <p className="text-slate-500 font-bold text-xs mt-1 uppercase tracking-widest">ID: {member.member_number} • Grade: {member.grade}</p>
+              <p className="text-slate-500 font-bold text-[10px] md:text-xs mt-1 uppercase tracking-widest">ID: {member.member_number} • Grade: {member.grade}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={20} className="text-slate-400" /></button>
         </div>
 
         {/* Content */}
-        <div className="p-8 flex-1 overflow-y-auto space-y-8">
+        <div className="p-6 md:p-8 flex-1 overflow-y-auto space-y-6 md:space-y-8">
             {/* Actions */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
                 {showDeleteConfirm ? (
                     <div className="flex items-center justify-between p-4 bg-red-50 rounded-2xl w-full border border-red-100">
-                        <span className="text-sm font-bold text-red-700">Confirmer la suppression ?</span>
+                        <span className="text-sm font-bold text-red-700">Supprimer ?</span>
                         <div className="flex gap-3">
                             <button onClick={() => setShowDeleteConfirm(false)} className="text-sm text-red-600/70 hover:underline">Annuler</button>
                             <button onClick={() => { onDelete(member.id); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold">Supprimer</button>
@@ -60,13 +60,13 @@ export default function MemberDetailsModal({ isOpen, onClose, member, onDelete, 
                     </div>
                 ) : (
                     <>
-                        <button onClick={() => { onEdit(member); onClose(); }} className="flex items-center justify-center gap-2 flex-1 p-4 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-2xl font-black text-sm transition">
+                        <button onClick={() => { onEdit(member); onClose(); }} className="flex items-center justify-center gap-2 flex-1 p-3 md:p-4 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-2xl font-black text-xs md:text-sm transition">
                             <Edit2 size={16} /> Modifier
                         </button>
-                        <PDFDownloadLink document={<MemberPDF member={member} />} fileName={`${member.last_name}_${member.first_name}.pdf`} className="flex items-center justify-center gap-2 flex-1 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm transition shadow-lg shadow-blue-200">
+                        <PDFDownloadLink document={<MemberPDF member={member} />} fileName={`${member.last_name}_${member.first_name}.pdf`} className="flex items-center justify-center gap-2 flex-1 p-3 md:p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs md:text-sm transition shadow-lg shadow-blue-200">
                             {({ loading }) => (loading ? '...' : <><Download size={16} /> Exporter PDF</>)}
                         </PDFDownloadLink>
-                        <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center justify-center gap-2 flex-1 p-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-sm transition">
+                        <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center justify-center gap-2 flex-1 p-3 md:p-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl font-black text-xs md:text-sm transition">
                             <Trash2 size={16} /> Supprimer
                         </button>
                     </>
@@ -74,13 +74,14 @@ export default function MemberDetailsModal({ isOpen, onClose, member, onDelete, 
             </div>
 
             {/* Détails */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <DetailItem icon={Calendar} label="Date de naissance" value={member.birth_date} />
                 <DetailItem icon={User} label="Sexe" value={member.gender === 'male' ? 'Masculin' : 'Féminin'} />
                 <DetailItem icon={Phone} label="Téléphone" value={member.phone} />
                 <DetailItem icon={Mail} label="Email" value={member.email} />
                 <DetailItem icon={MapPin} label="Adresse" value={member.address} />
             </div>
+
 
             {/* Urgence */}
             <div className="space-y-4">

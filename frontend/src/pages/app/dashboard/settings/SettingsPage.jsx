@@ -16,14 +16,15 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (settings) {
-      // Comparaison superficielle pour éviter la boucle infinie
-      const hasChanged = Object.keys(settings).some(key => settings[key] !== formData[key]);
-      if (hasChanged) {
-        setFormData(settings);
-      }
+    if (settings && Object.keys(settings).length > 0) {
+      setFormData({
+        monthly_tuition_price: settings.monthly_tuition_price || 0,
+        currency: settings.currency || 'EUR',
+        grace_period_days: settings.grace_period_days || 5,
+        club_name: settings.club_name || ''
+      });
     }
-  }, [settings, formData]);
+  }, [settings]); // Dépendance sur settings seulement
 
   const handleSave = async (e) => {
     e.preventDefault();
