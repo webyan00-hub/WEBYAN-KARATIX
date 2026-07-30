@@ -1,55 +1,34 @@
 import React, { Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Header, Footer } from './components/HeaderFooter';
+import HeroSection from './components/HeroSection';
 
-const HeroSection = React.lazy(() => import('./components/HeroSection'));
 const FeaturesSection = React.lazy(() => import('./components/FeaturesSection'));
+const WhyKaratixSection = React.lazy(() => import('./components/WhyKaratixSection'));
 const PricingSection = React.lazy(() => import('./components/PricingSection'));
+const FAQSection = React.lazy(() => import('./components/FAQSection'));
 const ContactSection = React.lazy(() => import('./components/ContactSection'));
 
 export default function LandingPage() {
   return (
-    <div>
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <Helmet>
         <title>KARATIX | Logiciel de gestion premium pour clubs de karaté</title>
-        <meta
-          name="description"
-          content="Digitalisez votre club de karaté avec KARATIX. Gérez membres, paiements, présences et grades en toute simplicité avec une solution professionnelle et intuitive."
-        />
-        <meta name="robots" content="index,follow" />
-        <meta
-          name="keywords"
-          content="karaté, club, dojo, gestion, logiciel, membres, paiements, présences, grades"
-        />
-        <link rel="canonical" href="https://www.karatix.com" />
-        <link rel="alternate" hreflang="fr" href="https://www.karatix.com" />
-        <meta
-          property="og:title"
-          content="KARATIX | Logiciel de gestion premium pour clubs de karaté"
-        />
-        <meta
-          property="og:description"
-          content="Digitalisez votre club de karaté avec KARATIX. Gérez membres, paiements, présences et grades en toute simplicité."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.karatix.com" />
-        <meta property="og:image" content="https://www.karatix.com/og-image.png" />
       </Helmet>
-
+      
       <Header />
-
-      <main role="main">
+      
+      <main>
+        {/* Section principale chargée immédiatement */}
+        <div className="bg-white"><HeroSection /></div>
+        
+        {/* Sections différées */}
         <Suspense fallback={<div className="py-24 text-center">Chargement...</div>}>
-          <HeroSection />
-        </Suspense>
-        <Suspense fallback={<div className="py-24 text-center">Chargement...</div>}>
-          <FeaturesSection />
-        </Suspense>
-        <Suspense fallback={<div className="py-24 text-center">Chargement...</div>}>
-          <PricingSection />
-        </Suspense>
-        <Suspense fallback={<div className="py-24 text-center">Chargement…</div>}>
-          <ContactSection />
+          <div className="bg-[#F1F5F9]"><FeaturesSection /></div>
+          <div className="bg-[#1E3A5F]"><WhyKaratixSection /></div>
+          <div className="bg-white"><PricingSection /></div>
+          <div className="bg-[#F1F5F9]"><FAQSection /></div>
+          <div className="bg-white"><ContactSection /></div>
         </Suspense>
       </main>
 

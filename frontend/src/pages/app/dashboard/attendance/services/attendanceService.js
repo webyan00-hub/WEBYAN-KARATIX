@@ -48,6 +48,7 @@ export const attendanceService = {
 
   // Gestion des Instances de séance
   async getOrCreateInstance(sessionId, date, clubId) {
+    // Tenter de récupérer l'instance existante
     let { data: inst, error } = await supabase
         .from('session_instances')
         .select('*')
@@ -57,14 +58,30 @@ export const attendanceService = {
         
     if (error && error.code !== 'PGRST116') throw error;
 
+    // Si aucune instance, essayer d'en créer une
     if (!inst) {
         const { data: newInst, error: insertError } = await supabase
             .from('session_instances')
-            .insert([{ session_id: sessionId, instance_date: date, club_id: clubId }])
+            .upsert(
+                { session_id: sessionId, instance_date: date, club_id: clubId },
+                { onConflict: 'session_id, instance_date' }
+            )
             .select()
             .single();
-        if (insertError) throw insertError;
-        inst = newInst;
+            
+        if (insertError) {
+             // Si l'upsert échoue, re-tenter une lecture au cas où elle aurait été créée entre-temps
+             const { data: retryInst, error: retryError } = await supabase
+                .from('session_instances')
+                .select('*')
+                .eq('session_id', sessionId)
+                .eq('instance_date', date)
+                .single();
+             if (retryError) throw retryError;
+             inst = retryInst;
+        } else {
+            inst = newInst;
+        }
     }
     return inst;
   },
@@ -109,13 +126,18 @@ export const attendanceService = {
     return true;
   },
 
-  async getAttendancesByDate(clubId, date) {
-    const { data, error } = await supabase
+  async getAttendancesByDate(clubId, date, sessionId) {
+    let query = supabase
       .from('attendances')
       .select('*, members(first_name, last_name), sessions(name, start_time)')
       .eq('club_id', clubId)
       .eq('attendance_date', date);
+    
+    if (sessionId) {
+      query = query.eq('session_id', sessionId);
+    }
 
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   },

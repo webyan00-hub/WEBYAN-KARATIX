@@ -1,12 +1,17 @@
 import { supabase } from '@/lib/supabase';
 
 export const examsService = {
-  // Récupérer toutes les sessions d'examen
+  // Récupérer toutes les sessions d'examen avec le comptage des participants
   async getSessions(clubId) {
     const { data, error } = await supabase
       .from('exam_sessions')
-      .select('*')
+      .select(`
+        *,
+        exam_participants(count)
+      `)
+      .eq('club_id', clubId)
       .order('exam_date', { ascending: false });
+    
     if (error) throw error;
     return data;
   },

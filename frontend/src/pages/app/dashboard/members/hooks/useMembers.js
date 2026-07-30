@@ -17,14 +17,19 @@ export const useMembers = (filters = {}) => {
   });
 
   const addMember = async (memberData) => {
-    // Logique de mutation (simplifiée pour cet exemple, à transformer en mutation plus tard si besoin)
+    console.log("DEBUG - Début addMember");
     const { photo, ...dataToInsert } = memberData;
+    
+    // On prépare l'objet d'insertion, photo_url sera mis à jour si une photo est uploadée
+    let memberToCreate = { ...dataToInsert };
+    
     const newMember = await membersService.addMember({
-        ...dataToInsert,
+        ...memberToCreate,
         club_id: club.id,
     });
 
     if (photo instanceof File) {
+        console.log("DEBUG - Détection fichier photo dans addMember");
         const filePath = await membersService.uploadMemberPhoto(photo, club.id, newMember.id);
         await membersService.updateMember(newMember.id, { photo_url: filePath });
     }
@@ -34,7 +39,18 @@ export const useMembers = (filters = {}) => {
   };
 
   const updateMember = async (id, memberData) => {
-    const updated = await membersService.updateMember(id, memberData);
+    console.log("DEBUG - Début updateMember");
+    const { photo, ...dataToUpdate } = memberData;
+    
+    let updatePayload = { ...dataToUpdate };
+    
+    if (photo instanceof File) {
+        console.log("DEBUG - Détection fichier photo dans updateMember");
+        const filePath = await membersService.uploadMemberPhoto(photo, club.id, id);
+        updatePayload.photo_url = filePath;
+    }
+    
+    const updated = await membersService.updateMember(id, updatePayload);
     queryClient.invalidateQueries(['members', club?.id]);
     return updated;
   };

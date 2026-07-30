@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 
 export default function SignUpPage() {
@@ -8,6 +10,7 @@ export default function SignUpPage() {
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,7 +26,6 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       await signUp(form.email, form.password);
-      // Redirection vers la page de création de club après une inscription réussie
       navigate('/create-club');
     } catch (err) {
       setError(err.message || 'Inscription échouée');
@@ -33,30 +35,113 @@ export default function SignUpPage() {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center py-12 px-4 bg-gray-50">
-      <div className="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl shadow-blue-100 border border-gray-100">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2 text-center tracking-tight">Créer un compte</h1>
-        <p className="text-gray-500 text-center mb-8">Rejoignez la communauté KARATIX</p>
-        {error && <div className="mb-6 p-4 text-sm text-red-600 bg-red-50 rounded-xl border border-red-100">{error}</div>}
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-5">
-            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" required onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+    <motion.section 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen flex items-center justify-center p-6 bg-[#F8FAFC] font-sans antialiased"
+    >
+      <div className="w-full max-w-[440px] bg-white/80 backdrop-blur-xl border border-slate-200/60 p-10 rounded-[28px] shadow-2xl shadow-blue-500/10">
+        {/* Branding & En-tête */}
+        <Link to="/" className="flex flex-col items-center gap-4 mb-10">
+          <img src="/img/logo.png" alt="KARATIX" className="w-[100px] h-[100px] object-contain" />
+          <div className="text-center">
+            <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter mb-2">Inscription</h2>
+            <p className="text-sm text-[#64748B]">Rejoignez la communauté KARATIX.</p>
           </div>
-          <div className="mb-5">
-            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="password">Mot de passe</label>
-            <input id="password" name="password" type="password" required minLength="6" onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+        </Link>
+
+        {/* Alertes d'erreur */}
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 text-sm text-status-error bg-red-50 border border-red-100 rounded-lg"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider" htmlFor="email">
+              Adresse email
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                onChange={handleChange}
+                placeholder="nom@dojo.com"
+                className="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-3 pl-10 text-base text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-action transition-colors"
+              />
+            </div>
           </div>
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="confirmPassword">Confirmez le mot de passe</label>
-            <input id="confirmPassword" name="confirmPassword" type="password" required minLength="6" onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider" htmlFor="password">
+              Mot de passe
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-3 pl-10 pr-12 text-base text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-action transition-colors"
+              />
+            </div>
           </div>
-          <button type="submit" disabled={loading} className="w-full py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/20">
-            {loading ? 'Inscription…' : 'S’inscrire'}
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider" htmlFor="confirmPassword">
+              Confirmez le mot de passe
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                required
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-3 pr-12 text-base text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-action transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0F172A] transition"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 mt-2 rounded-lg bg-[#0F172A] hover:bg-action text-white font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+          >
+            {loading ? 'Inscription…' : 'Créer mon compte'}
           </button>
         </form>
-        <p className="mt-8 text-sm text-center text-gray-600">Vous avez déjà un compte ? <Link to="/login" className="text-blue-600 font-semibold hover:underline">Se connecter</Link></p>
+
+        <p className="mt-8 text-center text-sm text-[#64748B]">
+          Vous avez déjà un compte ?{' '}
+          <Link to="/login" className="text-[#2563EB] font-bold hover:underline">
+            Se connecter
+          </Link>
+        </p>
       </div>
-    </section>
+    </motion.section>
   );
 }

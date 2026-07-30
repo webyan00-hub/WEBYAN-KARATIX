@@ -1,27 +1,138 @@
-# Documentation du Projet KARATIX SaaS
+# KARATIX - Gestion des abonnements SaaS
+## Version 1.0 (Spécification Fonctionnelle)
 
-## 1. Structure de la Base de Données (Supabase)
-La base de données suit des contraintes strictes. Toute modification doit respecter ces règles pour éviter les erreurs d'insertion :
+---
 
-- **Table `members`** :
-    - `gender` : Accepte uniquement les valeurs suivantes : `'male'`, `'female'`, `'other'`.
-    - `member_status` : Accepte uniquement : `'active'`, `'suspended_sick'`, `'suspended_vacation'`.
-- **Isolation des données** : Toutes les tables principales (`clubs`, `members`, `sessions`, `attendances`) utilisent le **RLS (Row Level Security)** pour isoler les données par `club_id`.
+# 1. Objectif
 
-## 2. Déploiement et CI/CD (Vercel)
-- **Root Directory** : Doit être configuré sur `frontend` dans les paramètres Vercel.
-- **Gestion des Dépendances** :
-    - En cas de conflit de dépendances (`ERESOLVE`), utiliser la commande d'installation : `npm install --legacy-peer-deps`.
-    - Cette commande est configurée dans le `package.json` via le script `"install:clean"`.
-- **Routage SPA (Single Page Application)** :
-    - Un fichier `vercel.json` est présent à la racine du dossier `frontend` pour rediriger toutes les requêtes vers `index.html` et permettre à `react-router-dom` de gérer les routes.
-- **Variables d'environnement** :
-    - `VITE_SUPABASE_URL`
-    - `VITE_SUPABASE_ANON_KEY`
-    - Doivent être définies dans le Dashboard Vercel.
+Le système d'abonnement de KARATIX permet aux clubs de karaté :
 
-## 3. Guide de résolution d'erreurs fréquentes
-- **Build Failed (Vite/Rolldown)** : Souvent dû à une dépendance utilisée dans le code mais manquante dans `package.json`.
-    - *Action* : Ajouter la dépendance (`npm install <package>`), puis pousser le changement.
-- **Filtres non fonctionnels** : Vérifier que les valeurs envoyées par le frontend correspondent aux contraintes `CHECK` dans le SQL de la base de données.
-- **Warning LF/CRLF** : Inoffensif sous Windows, ignoré par Git via la configuration `git config --global core.autocrlf true`.
+- Créer un compte gratuitement.
+- Profiter d'une période d'essai de 14 jours.
+- Utiliser toutes les fonctionnalités durant cette période.
+- Payer un abonnement uniquement à la fin de l'essai.
+- Calculer automatiquement le prix selon le nombre de membres.
+- Gérer les renouvellements automatiquement.
+- Bloquer uniquement les fonctionnalités d'écriture en cas d'expiration.
+
+---
+
+# 2. Période d'essai
+
+Chaque nouveau club bénéficie automatiquement de :
+
+- 14 jours d'essai
+- Aucune carte bancaire demandée
+- Aucun paiement demandé
+- Toutes les fonctionnalités disponibles
+
+Statut du club : **TRIAL**
+
+Le Super Admin voit :
+
+- Date de création
+- Date d'expiration de l'essai
+- Nombre de jours restants
+- Nombre de membres créés
+
+---
+
+# 3. Tarification
+
+Le prix est calculé selon le nombre de membres actifs.
+
+| Nombre de membres | Prix mensuel |
+|------------------|-------------:|
+| 1 à 30 | 10 000 Ar |
+| 31 à 70 | 20 000 Ar |
+| 71 à 100 | 35 000 Ar |
+| Plus de 100 | 50 000 Ar |
+
+Le calcul est effectué uniquement :
+
+- à la fin de l'essai
+- au renouvellement mensuel
+
+---
+
+# 4. Fin de la période d'essai
+
+Le 14ème jour :
+
+KARATIX compte automatiquement le nombre de membres actifs. Le système calcule le plan approprié et affiche le montant à payer.
+
+---
+
+# 5. Paiement
+
+Utilisation de l'API Papi.
+
+- **Flux :** Création paiement -> Redirection Papi -> Paiement -> Webhook de retour.
+- **Sécurité :** Seul le Webhook officiel de Papi valide définitivement l'abonnement.
+
+---
+
+# 6. Activation
+
+Après validation du paiement par Webhook :
+
+- Statut : **ACTIVE**
+- Début : Date du paiement
+- Fin : +30 jours
+
+---
+
+# 7. Capacité maximale du plan
+
+Chaque abonnement donne droit à une capacité maximale de membres (ex: plan 31-70 -> max 70 membres).
+
+---
+
+# 8. Ajout de nouveaux membres
+
+Pendant l'abonnement : ajout illimité de membres jusqu'à la limite du plan acheté.
+
+---
+
+# 9. Dépassement de la capacité
+
+Blocage de l'ajout si la limite est atteinte. Message d'invitation à passer au plan supérieur.
+
+---
+
+# 10. Renouvellement
+
+Recalcul automatique du plan basé sur l'effectif actuel le jour du renouvellement.
+
+---
+
+# 11. Expiration
+
+Si aucun paiement n'est reçu :
+
+- Statut : **EXPIRED**
+- Mode : **LECTURE SEULE** (plus d'ajouts/modifications/enregistrements).
+
+---
+
+# 12. Réactivation
+
+Dès paiement validé : retour au statut **ACTIVE** et accès complet.
+
+---
+
+# 13. Tableau de bord du Super Admin
+
+Vue consolidée : clubs (statut, essai, actif, expiré, revenu mensuel, historique).
+
+---
+
+# 14. Historique des abonnements
+
+Enregistrement immuable de chaque transaction (Club, Dates, Membres au calcul, Plan, Prix, Référence, Moyen de paiement, Statut).
+
+---
+
+# 15. Règles métier
+
+Résumé : Essai 14j, paiement Papi via Webhook obligatoire, calcul automatique, tarif figé durant la période, mode lecture seule en expiration, conservation des données.

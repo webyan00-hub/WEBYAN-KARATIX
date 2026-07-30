@@ -9,7 +9,11 @@ export const useExams = (sessionId = null) => {
   // Sessions
   const sessionsQuery = useQuery({
     queryKey: ['exams', club?.id],
-    queryFn: () => examsService.getSessions(club.id),
+    queryFn: async () => {
+        const data = await examsService.getSessions(club.id);
+        console.log("Sessions récupérées:", data);
+        return data;
+    },
     enabled: !!club?.id,
   });
 

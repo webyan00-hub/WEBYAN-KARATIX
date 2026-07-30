@@ -1,6 +1,26 @@
 import { supabase } from '../../../../../lib/supabase';
 
 export const membersService = {
+  // Calculer le statut du membre
+  getMemberStatus(member) {
+    const isManuallyActive = member.active;
+    if (!member.last_attendance_date) {
+      return isManuallyActive 
+        ? { label: 'Actif', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' } 
+        : { label: 'Inactif', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+    }
+    const lastAttendance = new Date(member.last_attendance_date);
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    const isRecentlyActive = lastAttendance > threeMonthsAgo;
+    
+    if (!isManuallyActive) return { label: 'Inactif', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+    if (!isRecentlyActive) return { label: 'Absence', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+    
+    return { label: 'Actif', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  },
+
   // Récupérer les membres du club avec filtrage optionnel
   async getAllMembers(clubId, filters = {}) {
     let query = supabase
@@ -25,6 +45,7 @@ export const membersService = {
 
   // Ajouter un nouveau membre
   async addMember(memberData) {
+    // On conserve tous les champs reçus pour l'insertion
     const { data, error } = await supabase
       .from('members')
       .insert([memberData])
@@ -69,6 +90,7 @@ export const membersService = {
 
   // Téléverser la photo du membre
   async uploadMemberPhoto(file, clubId, memberId) {
+    console.log("DEBUG - Début upload photo pour membre:", memberId);
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
@@ -83,11 +105,18 @@ export const membersService = {
     const fileName = `${memberId}.${fileExt}`;
     const filePath = `members/${clubId}/${fileName}`;
 
+    console.log("DEBUG - Upload vers le chemin:", filePath);
+
     const { error } = await supabase.storage
       .from('member-photos')
       .upload(filePath, file, { upsert: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error("DEBUG - Erreur upload storage:", error);
+      throw error;
+    }
+    
+    console.log("DEBUG - Upload storage réussi");
     return filePath;
   }
 };

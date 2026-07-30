@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Mail, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -29,41 +30,70 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center py-12 px-4 bg-gray-50">
-      <div className="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl shadow-blue-100 border border-gray-100">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2 text-center tracking-tight">Mot de passe oublié ?</h1>
-        <p className="text-gray-500 text-center mb-8">Entrez votre email pour recevoir le lien de réinitialisation.</p>
-        
-        {error && <div className="mb-6 p-4 text-sm text-red-600 bg-red-50 rounded-xl border border-red-100">{error}</div>}
-        {message && <div className="mb-6 p-4 text-sm text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100">{message}</div>}
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            />
+    <motion.section 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen flex items-center justify-center p-6 bg-[#F8FAFC] font-sans antialiased"
+    >
+      <div className="w-full max-w-[440px] bg-white/80 backdrop-blur-xl border border-slate-200/60 p-10 rounded-[28px] shadow-2xl shadow-blue-500/10">
+        {/* Branding & En-tête */}
+        <Link to="/" className="flex flex-col items-center gap-4 mb-10">
+          <img src="/img/logo.png" alt="KARATIX" className="w-[100px] h-[100px] object-contain" />
+          <div className="text-center">
+            <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter mb-2">Mot de passe oublié ?</h2>
+            <p className="text-sm text-[#64748B]">Entrez votre email pour recevoir le lien de réinitialisation.</p>
           </div>
+        </Link>
+
+        {/* Alertes d'état */}
+        {error && (
+          <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-4 text-sm text-status-error bg-red-50 border border-red-100 rounded-lg">
+            {error}
+          </motion.div>
+        )}
+        {message && (
+          <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-4 text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-lg">
+            {message}
+          </motion.div>
+        )}
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider" htmlFor="email">
+              Adresse email
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nom@dojo.com"
+                className="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-3 pl-10 text-base text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-action transition-colors"
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
+            className="w-full py-3 mt-2 rounded-lg bg-[#0F172A] hover:bg-action text-white font-bold text-base transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
           >
-            {loading ? 'Envoi…' : 'Envoyer le lien'}
+            {loading ? 'Envoi en cours…' : 'Envoyer le lien'}
           </button>
         </form>
-        
-        <div className="mt-8 text-center">
-            <Link to="/login" className="text-sm text-gray-600 font-semibold hover:text-blue-600 flex items-center justify-center gap-2">
-                <ArrowLeft className="w-4 h-4" /> Retour à la connexion
-            </Link>
-        </div>
+
+        <p className="mt-8 text-center text-sm">
+          <Link to="/login" className="text-[#2563EB] font-bold hover:underline flex items-center justify-center gap-2">
+            <ArrowLeft size={16} /> Retour à la connexion
+          </Link>
+        </p>
       </div>
-    </section>
+    </motion.section>
   );
 }

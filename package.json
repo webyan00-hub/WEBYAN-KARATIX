@@ -11,6 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
+    "browser-image-compression": "^2.0.2",
     "recharts": "^3.9.2"
+  },
+  "devDependencies": {
+    "vite-plugin-node-polyfills": "^0.28.0"
   }
 }
