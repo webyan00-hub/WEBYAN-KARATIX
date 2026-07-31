@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Phone, AlertTriangle, Stethoscope, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '../../../../context/ToastContext';
+import { useToast } from '../../../../../context/ToastContext';
 
 export default function MemberModal({ isOpen, onClose, onSave, initialData = null }) {
   const toast = useToast();  const [currentStep, setCurrentStep] = useState(1);
