@@ -16,16 +16,37 @@ export const settingsService = {
   // Mettre à jour les paramètres
   async updateSettings(clubId, settings) {
     console.log("DEBUG - settingsService.updateSettings called with:", { clubId, settings });
-    const { data, error } = await supabase
+    
+    // Essayer de mettre à jour d'abord
+    const { data: existing, error: fetchError } = await supabase
       .from('club_settings')
-      .upsert({ club_id: clubId, ...settings })
-      .select();
+      .select('id')
+      .eq('club_id', clubId)
+      .maybeSingle();
 
-    if (error) {
-        console.error("DEBUG - Supabase error in updateSettings:", error);
-        throw error;
+    if (fetchError) throw fetchError;
+
+    let result;
+    if (existing) {
+        // Mise à jour
+        const { data, error } = await supabase
+          .from('club_settings')
+          .update(settings)
+          .eq('club_id', clubId)
+          .select();
+        if (error) throw error;
+        result = data;
+    } else {
+        // Insertion
+        const { data, error } = await supabase
+          .from('club_settings')
+          .insert({ club_id: clubId, ...settings })
+          .select();
+        if (error) throw error;
+        result = data;
     }
-    console.log("DEBUG - Supabase response in updateSettings:", data);
-    return data[0];
+
+    console.log("DEBUG - Supabase response in updateSettings:", result);
+    return result[0];
   }
 };
