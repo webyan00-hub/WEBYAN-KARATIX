@@ -24,7 +24,7 @@ export default function AllPaymentsPage() {
       `)
       .order('created_at', { ascending: false });
 
-    if (error) console.error("Erreur chargement paiements:", error);
+    if (error) toast('Erreur lors du chargement des paiements', 'error');
     else setPayments(data || []);
     setLoading(false);
   };

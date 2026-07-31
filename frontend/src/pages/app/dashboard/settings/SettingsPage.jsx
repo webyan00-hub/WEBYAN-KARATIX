@@ -28,13 +28,10 @@ export default function SettingsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    console.log("DEBUG - Sauvegarde des paramètres, formData:", formData);
     try {
       await updateSettings(formData);
-      console.log("DEBUG - Sauvegarde réussie");
       toast('Paramètres enregistrés avec succès !', 'success');
     } catch (err) {
-      console.error("DEBUG - Erreur de sauvegarde:", err);
       toast('Erreur lors de l\'enregistrement', 'error');
     }
   };

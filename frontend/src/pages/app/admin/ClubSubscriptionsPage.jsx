@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { CreditCard, CheckCircle, AlertCircle, XCircle, Clock, Eye, History, Search, Filter } from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
 
 export default function ClubSubscriptionsPage() {
+  const toast = useToast();
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -29,7 +31,7 @@ export default function ClubSubscriptionsPage() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Erreur chargement abonnements:", error);
+        toast('Erreur lors du chargement des abonnements', 'error');
       } else {
         setSubscriptions(data || []);
       }
@@ -49,7 +51,7 @@ export default function ClubSubscriptionsPage() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Erreur chargement audit:", error);
+        toast('Erreur lors du chargement de l\'historique', 'error');
       } else {
         setAuditLogs(data || []);
       }

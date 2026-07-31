@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Phone, AlertTriangle, Stethoscope, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../../../../context/ToastContext';
 
 export default function MemberModal({ isOpen, onClose, onSave, initialData = null }) {
-  const [currentStep, setCurrentStep] = useState(1);
+  const toast = useToast();  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     first_name: '', last_name: '', birth_date: '', gender: 'male', grade: 'Blanche',
     entry_date: new Date().toISOString().split('T')[0], phone: '', email: '', address: '',

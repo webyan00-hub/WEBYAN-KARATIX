@@ -47,14 +47,12 @@ export default function AddPaymentWizard({ onClose }) {
 
   const selectMember = async (member) => {
     const status = await paymentsService.getMemberFinancialStatus(member.id);
-    console.log("DEBUG - selectMember - status reçu:", status);
     setWizardData(prev => ({ 
         ...prev, 
         member, 
         financialStatus: status, 
         subscriptionId: status?.id 
     }));
-    console.log("DEBUG - selectMember - wizardData après set:", { ...wizardData, member, financialStatus: status, subscriptionId: status?.id });
   };
 
   const resetSearch = () => {
