@@ -32,7 +32,7 @@ export default function MemberDetailsModal({ isOpen, onClose, member, onDelete, 
         <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center">
           <div className="flex items-center gap-4 md:gap-6">
             <img 
-              src={member.photo_url ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/member-photos/${member.photo_url}` : '/placeholder.png'} 
+              src={member.photo_url ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/member-photos/${member.photo_url}` : '/logo.png'} 
               className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover shadow-sm"
               alt={`${member.first_name} ${member.last_name}`}
             />
