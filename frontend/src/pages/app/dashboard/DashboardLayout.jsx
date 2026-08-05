@@ -100,7 +100,7 @@ export default function DashboardLayout() {
             <h1 className="font-bold text-text-main text-sm truncate max-w-[60%]">{settings?.club_name || 'KARATIX'}</h1>
         </header>
 
-        <div className="p-4 md:p-8">
+        <div className="w-full">
             {club?.status === 'suspend' && (
               <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-xl shadow-sm">
                 <p className="text-sm text-amber-700 font-medium">Votre club est suspendu. <button onClick={handlePayment} className="font-bold underline">Payer maintenant</button></p>

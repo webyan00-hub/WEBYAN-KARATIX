@@ -10,7 +10,6 @@ export const useMembers = (filters = {}) => {
     queryKey: ['members', club?.id, filters],
     queryFn: async () => {
         const data = await membersService.getAllMembers(club.id, filters);
-        console.log("Membres reçus après filtre:", data);
         return data;
     },
     enabled: !!club?.id,

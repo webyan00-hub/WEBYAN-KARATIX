@@ -3,20 +3,23 @@ import { supabase } from '../../../../../lib/supabase';
 export const paymentsService = {
   // Verrou fonctionnel : Vérifie si le membre peut s'entraîner
   async getMemberFinancialStatus(memberId) {
-    const { data: subscription, error } = await supabase
+    const { data: subscriptions, error } = await supabase
       .from('subscriptions')
       .select('*, payments(*)')
       .eq('member_id', memberId)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
 
     if (error) {
       console.warn("DEBUG - getMemberFinancialStatus - error:", error);
-      // Retourner une structure minimale pour éviter le plantage du Wizard
       return { status: 'no-subscription', balance: 0, id: null };
     }
     
+    if (!subscriptions || subscriptions.length === 0) {
+      return { status: 'no-subscription', balance: 0, id: null };
+    }
+
+    const subscription = subscriptions[0];
     console.log("DEBUG - getMemberFinancialStatus - subscription:", subscription);
 
     // Logique de calcul simple du solde
