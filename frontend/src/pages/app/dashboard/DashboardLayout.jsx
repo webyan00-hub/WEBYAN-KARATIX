@@ -102,8 +102,22 @@ export default function DashboardLayout() {
 
         <div className="w-full">
             {club?.status === 'suspend' && (
-              <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-xl shadow-sm">
-                <p className="text-sm text-amber-700 font-medium">Votre club est suspendu. <button onClick={handlePayment} className="font-bold underline">Payer maintenant</button></p>
+              <div className="mx-4 mt-6 bg-gradient-to-r from-amber-600 to-amber-700 p-6 rounded-3xl shadow-lg shadow-amber-200 flex items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="bg-white/20 p-3 rounded-2xl">
+                        <AlertTriangle className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-black text-lg tracking-tight">Accès restreint : Renouvellement requis</h3>
+                        <p className="text-amber-100 font-medium text-sm mt-0.5">Votre club est actuellement suspendu. Régularisez votre situation pour retrouver toutes les fonctionnalités.</p>
+                    </div>
+                </div>
+                <button 
+                    onClick={handlePayment} 
+                    className="whitespace-nowrap bg-white text-amber-700 hover:bg-amber-50 px-8 py-3 rounded-2xl font-black text-sm transition-all shadow-md"
+                >
+                    Payer maintenant
+                </button>
               </div>
             )}
             <Outlet />

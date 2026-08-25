@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import { paymentsService } from './services/paymentsService';
 import { settingsService } from '../settings/services/settingsService';
-import { Search, RefreshCw } from 'lucide-react';
+import { CreditCard, RefreshCw, Search, TrendingUp, Wallet } from 'lucide-react';
 
 const monthLabels = {
   '01': 'Janvier',
-  '02': 'Février',
+  '02': 'Fevrier',
   '03': 'Mars',
   '04': 'Avril',
   '05': 'Mai',
   '06': 'Juin',
   '07': 'Juillet',
-  '08': 'Août',
+  '08': 'Aout',
   '09': 'Septembre',
   '10': 'Octobre',
   '11': 'Novembre',
-  '12': 'Décembre'
+  '12': 'Decembre',
 };
 
 export default function PaymentsHistoryPage() {
@@ -27,8 +27,6 @@ export default function PaymentsHistoryPage() {
   const [monthFilter, setMonthFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState(null);
-
-  const [sortConfig] = useState({ key: 'payment_date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -39,12 +37,12 @@ export default function PaymentsHistoryPage() {
     setCurrentPage(1);
     Promise.all([
       paymentsService.getAllPayments(club.id),
-      settingsService.getSettings(club.id)
+      settingsService.getSettings(club.id),
     ]).then(([paymentsData, settingsData]) => {
-      setPayments(paymentsData);
+      setPayments(paymentsData || []);
       setSettings(settingsData);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [club?.id]);
 
   useEffect(() => {
@@ -52,222 +50,154 @@ export default function PaymentsHistoryPage() {
   }, [refreshData]);
 
   const processedPayments = useMemo(() => {
-    let filtered = payments.filter(p => {
-      const normalizedSearch = search.toLowerCase();
-      const matchesSearch = p.member_name?.toLowerCase().includes(normalizedSearch) || p.billing_period.includes(search);
-      const matchesYear = yearFilter === 'all' || p.billing_period.startsWith(yearFilter);
-      const matchesMonth = monthFilter === 'all' || p.billing_period.split('-')[1] === monthFilter;
-      return matchesSearch && matchesYear && matchesMonth;
-    });
+    const normalizedSearch = search.trim().toLowerCase();
 
-    filtered.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
+    return payments
+      .filter((payment) => {
+        const matchesSearch =
+          !normalizedSearch ||
+          payment.member_name?.toLowerCase().includes(normalizedSearch) ||
+          payment.billing_period?.includes(normalizedSearch);
+        const matchesYear = yearFilter === 'all' || payment.billing_period?.startsWith(yearFilter);
+        const matchesMonth = monthFilter === 'all' || payment.billing_period?.split('-')[1] === monthFilter;
 
-    return filtered;
-  }, [payments, search, yearFilter, monthFilter, sortConfig]);
+        return matchesSearch && matchesYear && matchesMonth;
+      })
+      .sort((a, b) => new Date(b.payment_date || 0) - new Date(a.payment_date || 0));
+  }, [monthFilter, payments, search, yearFilter]);
 
   const paginatedPayments = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return processedPayments.slice(startIndex, startIndex + itemsPerPage);
-  }, [processedPayments, currentPage]);
+  }, [currentPage, processedPayments]);
 
   const totalPages = Math.ceil(processedPayments.length / itemsPerPage);
-  const totalAmount = processedPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-  const years = useMemo(() => [...new Set(payments.map(p => p.billing_period.split('-')[0]))].sort().reverse(), [payments]);
-  const months = Object.keys(monthLabels);
-  const currency = settings?.currency || 'EUR';
-  const displayCurrency = currency === 'MGA' ? 'Ar' : '€';
+  const totalAmount = processedPayments.reduce((acc, payment) => acc + Number(payment.amount || 0), 0);
   const averageAmount = processedPayments.length > 0 ? Math.round(totalAmount / processedPayments.length) : 0;
+  const years = useMemo(() => [...new Set(payments.map((payment) => payment.billing_period?.split('-')[0]).filter(Boolean))].sort().reverse(), [payments]);
+  const currency = settings?.currency || 'EUR';
+  const displayCurrency = currency === 'MGA' ? 'Ar' : 'EUR';
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 py-4 sm:px-4 md:p-8 space-y-5 md:space-y-8 overflow-x-hidden">
-      <div className="flex items-start justify-between gap-3 md:items-center">
-        <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl md:text-4xl font-black text-slate-950 tracking-tight">
-            Historique des Paiements
-          </h2>
-          <p className="text-xs sm:text-sm md:text-lg text-slate-500 font-medium mt-1">
-            Suivi complet des transactions.
-          </p>
+    <div className="mx-auto max-w-7xl space-y-5 px-4 py-4 md:space-y-6 md:px-8 md:py-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-widest text-blue-600">Paiements</p>
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-950 md:text-4xl">Suivi de paiement</h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">Historique clair des encaissements et periodes reglees.</p>
         </div>
         <button
           onClick={refreshData}
-          className="shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-600 transition flex items-center justify-center"
-          aria-label="Rafraîchir les paiements"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:bg-slate-50"
         >
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Actualiser
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-4">
-        <div className="p-3 md:p-6 bg-white rounded-xl md:rounded-3xl border border-slate-100 shadow-sm">
-          <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wide mb-1">
-            Transactions
-          </p>
-          <p className="text-xl md:text-3xl font-black text-slate-950 font-mono">
-            {processedPayments.length}
-          </p>
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
+        <div className="rounded-2xl border border-blue-500 bg-blue-600 p-3 text-white shadow-lg shadow-blue-100 md:p-4">
+          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-blue-100"><CreditCard className="h-4 w-4" /> Transactions</div>
+          <p className="mt-2 text-2xl font-black md:text-3xl">{processedPayments.length}</p>
         </div>
-        <div className="p-3 md:p-6 bg-blue-600 rounded-xl md:rounded-3xl text-white shadow-lg shadow-blue-200">
-          <p className="text-[9px] md:text-[10px] font-black text-blue-100 uppercase tracking-wide mb-1">
-            Total
-          </p>
-          <p className="text-lg sm:text-xl md:text-3xl font-black font-mono break-words">
-            {totalAmount.toLocaleString()} {displayCurrency}
-          </p>
+        <div className="rounded-2xl border border-emerald-500 bg-emerald-600 p-3 text-white shadow-lg shadow-emerald-100 md:p-4">
+          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-emerald-100"><Wallet className="h-4 w-4" /> Total</div>
+          <p className="mt-2 text-lg font-black md:text-3xl">{totalAmount.toLocaleString()} {displayCurrency}</p>
         </div>
-        <div className="col-span-2 sm:col-span-1 p-3 md:p-6 bg-emerald-500 rounded-xl md:rounded-3xl text-white shadow-lg shadow-emerald-200">
-          <p className="text-[9px] md:text-[10px] font-black text-emerald-100 uppercase tracking-wide mb-1">
-            Moyenne
-          </p>
-          <p className="text-lg sm:text-xl md:text-3xl font-black font-mono break-words">
-            {averageAmount.toLocaleString()} {displayCurrency}
-          </p>
+        <div className="rounded-2xl border border-slate-700 bg-slate-900 p-3 text-white shadow-lg shadow-slate-200 md:p-4">
+          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-slate-300"><TrendingUp className="h-4 w-4" /> Moyenne</div>
+          <p className="mt-2 text-lg font-black md:text-3xl">{averageAmount.toLocaleString()} {displayCurrency}</p>
         </div>
       </div>
 
-      <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-2 md:gap-3">
-        <div className="relative flex-grow min-w-0">
-          <Search className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
-          <input
-            placeholder="Rechercher par membre..."
-            className="w-full pl-10 md:pl-14 pr-3 md:pr-6 py-3 md:py-5 bg-slate-50 border-none rounded-lg md:rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2 md:flex md:w-auto">
-          <select
-            value={yearFilter}
-            onChange={e => {
-              setYearFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="min-w-0 px-3 md:px-5 py-3 md:py-5 bg-slate-50 rounded-lg md:rounded-2xl font-black text-xs md:text-sm text-slate-900 border-none cursor-pointer outline-none"
-          >
-            <option value="all">Année</option>
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="grid gap-3 md:grid-cols-[1fr_160px_170px]">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              placeholder="Rechercher membre ou periode"
+              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
+              value={search}
+              onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
+            />
+          </div>
+          <select value={yearFilter} onChange={(event) => { setYearFilter(event.target.value); setCurrentPage(1); }} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+            <option value="all">Toutes annees</option>
+            {years.map((year) => <option key={year} value={year}>{year}</option>)}
           </select>
-          <select
-            value={monthFilter}
-            onChange={e => {
-              setMonthFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="min-w-0 px-3 md:px-5 py-3 md:py-5 bg-slate-50 rounded-lg md:rounded-2xl font-black text-xs md:text-sm text-slate-900 border-none cursor-pointer outline-none"
-          >
-            <option value="all">Mois</option>
-            {months.map(m => <option key={m} value={m}>{monthLabels[m]}</option>)}
+          <select value={monthFilter} onChange={(event) => { setMonthFilter(event.target.value); setCurrentPage(1); }} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50">
+            <option value="all">Tous les mois</option>
+            {Object.keys(monthLabels).map((month) => <option key={month} value={month}>{monthLabels[month]}</option>)}
           </select>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl md:rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="md:hidden">
           {loading ? (
-            <div className="p-6 text-center text-slate-400 font-black">Chargement...</div>
+            <div className="p-8 text-center text-sm font-black text-slate-400">Chargement...</div>
           ) : paginatedPayments.length > 0 ? (
-            <div className="divide-y divide-slate-100">
-              {paginatedPayments.map(p => {
-                const [periodYear, periodMonth] = p.billing_period.split('-');
+            <div className="grid gap-3 bg-slate-50/70 p-3">
+              {paginatedPayments.map((payment) => {
+                const [periodYear, periodMonth] = payment.billing_period?.split('-') || [];
                 return (
-                  <article key={p.id} className="p-3">
+                  <article key={payment.id} className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-black text-slate-950 text-sm leading-snug break-words">
-                          {p.member_name || 'N/A'}
-                        </p>
-                        <p className="text-[11px] text-slate-500 font-bold mt-1">
-                          {new Date(p.payment_date).toLocaleDateString('fr-FR')} · {monthLabels[periodMonth] || periodMonth} {periodYear}
-                        </p>
+                        <p className="truncate text-sm font-black text-slate-950">{payment.member_name || 'N/A'}</p>
+                        <p className="mt-1 text-xs font-bold text-slate-500">{monthLabels[periodMonth] || periodMonth} {periodYear}</p>
                       </div>
-                      <p className="shrink-0 text-sm font-black text-slate-950 font-mono text-right">
-                        {Number(p.amount).toLocaleString()} {displayCurrency}
-                      </p>
+                      <p className="text-right text-sm font-black text-emerald-700">{Number(payment.amount || 0).toLocaleString()} {displayCurrency}</p>
                     </div>
-                    {p.payment_method && (
-                      <span className="inline-flex mt-3 px-2 py-1 bg-slate-50 text-slate-500 rounded-md text-[10px] font-black uppercase tracking-wide">
-                        {p.payment_method}
-                      </span>
-                    )}
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600">{payment.payment_method || 'Methode'}</span>
+                      <span className="text-xs font-bold text-slate-400">{payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('fr-FR') : '-'}</span>
+                    </div>
                   </article>
                 );
               })}
             </div>
           ) : (
-            <div className="p-6 text-center text-slate-500 font-bold">Aucun paiement trouvé.</div>
+            <div className="p-8 text-center text-sm font-bold text-slate-500">Aucun paiement trouve.</div>
           )}
         </div>
 
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50">
-              <tr className="text-[10px] uppercase text-slate-400 tracking-wide font-black">
-                <th className="px-6 py-5">Date</th>
-                <th className="px-6 py-5">Membre</th>
-                <th className="px-6 py-5">Période</th>
-                <th className="px-6 py-5">Méthode</th>
-                <th className="px-6 py-5 text-right">Montant</th>
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full border-collapse text-left">
+            <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <tr>
+                <th className="px-5 py-4">Date</th>
+                <th className="px-5 py-4">Membre</th>
+                <th className="px-5 py-4">Periode</th>
+                <th className="px-5 py-4">Methode</th>
+                <th className="px-5 py-4 text-right">Montant</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr><td colSpan="5" className="p-10 text-center text-slate-400 font-black">Chargement...</td></tr>
-              ) : paginatedPayments.length > 0 ? (
-                paginatedPayments.map(p => {
-                  const [periodYear, periodMonth] = p.billing_period.split('-');
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition">
-                      <td className="px-6 py-5 font-bold text-slate-600 text-sm font-mono">
-                        {new Date(p.payment_date).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-5 font-black text-slate-950 text-sm">
-                        {p.member_name || 'N/A'}
-                      </td>
-                      <td className="px-6 py-5 font-bold text-slate-600 text-sm">
-                        {monthLabels[periodMonth] || periodMonth} {periodYear}
-                      </td>
-                      <td className="px-6 py-5 font-bold text-slate-500 text-sm">
-                        {p.payment_method || '-'}
-                      </td>
-                      <td className="px-6 py-5 text-right font-black text-slate-950 text-sm">
-                        {Number(p.amount).toLocaleString()} {displayCurrency}
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr><td colSpan="5" className="p-10 text-center text-slate-500 font-bold">Aucun paiement trouvé.</td></tr>
+              ) : paginatedPayments.length > 0 ? paginatedPayments.map((payment) => {
+                const [periodYear, periodMonth] = payment.billing_period?.split('-') || [];
+                return (
+                  <tr key={payment.id} className="transition hover:bg-slate-50/60">
+                    <td className="px-5 py-4 font-mono text-sm font-bold text-slate-600">{payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('fr-FR') : '-'}</td>
+                    <td className="px-5 py-4 text-sm font-black text-slate-950">{payment.member_name || 'N/A'}</td>
+                    <td className="px-5 py-4 text-sm font-bold text-slate-600">{monthLabels[periodMonth] || periodMonth} {periodYear}</td>
+                    <td className="px-5 py-4 text-sm font-bold text-slate-500">{payment.payment_method || '-'}</td>
+                    <td className="px-5 py-4 text-right text-sm font-black text-emerald-700">{Number(payment.amount || 0).toLocaleString()} {displayCurrency}</td>
+                  </tr>
+                );
+              }) : (
+                <tr><td colSpan="5" className="p-10 text-center text-slate-500 font-bold">Aucun paiement trouve.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {totalPages > 1 && (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center px-3 md:px-6 py-3 md:py-5 bg-slate-50 border-t border-slate-100 gap-2 md:gap-4">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
-              className="px-3 md:px-6 py-2 md:py-3 bg-white border border-slate-200 rounded-lg md:rounded-xl font-black text-xs md:text-sm hover:bg-slate-50 disabled:opacity-50"
-            >
-              Précédent
-            </button>
-            <span className="text-xs md:text-sm font-black text-slate-500 font-mono whitespace-nowrap">
-              Page {currentPage} / {totalPages}
-            </span>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
-              className="px-3 md:px-6 py-2 md:py-3 bg-white border border-slate-200 rounded-lg md:rounded-xl font-black text-xs md:text-sm hover:bg-slate-50 disabled:opacity-50"
-            >
-              Suivant
-            </button>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-slate-100 bg-slate-50 px-3 py-3 md:px-5">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 disabled:opacity-40">Precedent</button>
+            <span className="text-xs font-black text-slate-500">Page {currentPage} / {totalPages}</span>
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 disabled:opacity-40">Suivant</button>
           </div>
         )}
       </div>

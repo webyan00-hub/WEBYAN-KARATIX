@@ -95,18 +95,18 @@ export default function AddPaymentWizard({ onClose }) {
   const handleConfirm = async () => {
     try {
       const existingPeriods = wizardData.financialStatus?.payments?.map(p => p.billing_period) || [];
-      const validMonths = wizardData.months.filter(m => !existingPeriods.includes(m));
+      const duplicateMonths = wizardData.months.filter(m => existingPeriods.includes(m));
 
-      if (validMonths.length === 0) {
-        toast('Tous les mois sélectionnés ont déjà été payés.', 'warning');
+      if (duplicateMonths.length > 0) {
+        const duplicateMonthNames = duplicateMonths.map(m => {
+          const mIndex = parseInt(m.split('-')[1]) - 1;
+          return monthsList[mIndex];
+        });
+        toast(`Erreur : Les mois suivants ont déjà été payés : ${duplicateMonthNames.join(', ')}. Veuillez corriger votre sélection.`, 'error');
         return;
       }
 
-      if (validMonths.length < wizardData.months.length) {
-        toast('Certains mois ont été ignorés car ils ont déjà été payés.', 'info');
-      }
-
-      const payments = validMonths.map(month => ({
+      const payments = wizardData.months.map(month => ({
         amount: settings?.monthly_tuition_price || 0,
         payment_method: wizardData.payment_method,
         billing_period: month

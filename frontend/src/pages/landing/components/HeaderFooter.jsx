@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button/Button';
 import { ChevronDown, Sparkles, CreditCard, HelpCircle, Users, Calendar, Wallet, Trophy, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ const theme = {
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="fixed top-0 left-0 w-full z-[1000] bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all duration-300 shadow-sm">
@@ -42,6 +43,7 @@ export function Header() {
             size="sm" 
             className="text-white px-5 xl:px-6 py-2.5 text-sm font-bold rounded-full shadow-lg transition-all duration-300"
             style={{ backgroundColor: theme.primary }}
+            onClick={() => navigate('/signup')}
           >
             Essayer gratuitement
           </Button>
@@ -67,7 +69,7 @@ export function Header() {
             <a href="#pourquoi" className="block text-sm font-bold" style={{ color: theme.foreground }} onClick={() => setIsOpen(false)}>Pourquoi KARATIX</a>
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-4">
               <Link to="/login" className="text-sm font-bold text-center py-3" style={{ color: theme.muted }} onClick={() => setIsOpen(false)}>Connexion</Link>
-              <Button size="lg" className="w-full text-white font-bold rounded-full" style={{ backgroundColor: theme.primary }} onClick={() => setIsOpen(false)}>Essayer gratuitement</Button>
+              <Button size="lg" className="w-full text-white font-bold rounded-full" style={{ backgroundColor: theme.primary }} onClick={() => { setIsOpen(false); navigate('/signup'); }}>Essayer gratuitement</Button>
             </div>
           </motion.div>
         )}

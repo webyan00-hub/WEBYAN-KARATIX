@@ -1,71 +1,73 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { membersService } from '../services/membersService';
 import { useAuth } from '../../../../../context/AuthContext';
 
 export const useMembers = (filters = {}) => {
   const { club } = useAuth();
   const queryClient = useQueryClient();
+  const queryKey = ['members', club?.id, filters];
 
   const { data: members = [], isLoading: loading, error } = useQuery({
-    queryKey: ['members', club?.id, filters],
-    queryFn: async () => {
-        const data = await membersService.getAllMembers(club.id, filters);
-        return data;
-    },
+    queryKey,
+    queryFn: async () => membersService.getAllMembers(club.id, filters),
     enabled: !!club?.id,
+    staleTime: 5_000,
   });
 
-  const addMember = async (memberData) => {
-    console.log("DEBUG - Début addMember");
-    const { photo, ...dataToInsert } = memberData;
-    
-    // On prépare l'objet d'insertion, photo_url sera mis à jour si une photo est uploadée
-    let memberToCreate = { ...dataToInsert };
-    
-    const newMember = await membersService.addMember({
-        ...memberToCreate,
-        club_id: club.id,
-    });
-
-    if (photo instanceof File) {
-        console.log("DEBUG - Détection fichier photo dans addMember");
-        const filePath = await membersService.uploadMemberPhoto(photo, club.id, newMember.id);
-        await membersService.updateMember(newMember.id, { photo_url: filePath });
-    }
-    
-    queryClient.invalidateQueries(['members', club?.id]);
-    return newMember;
+  const mutationOptions = {
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousMembers = queryClient.getQueryData(queryKey);
+      return { previousMembers };
+    },
+    onError: (err, newData, context) => {
+      queryClient.setQueryData(queryKey, context.previousMembers);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
   };
 
-  const updateMember = async (id, memberData) => {
-    console.log("DEBUG - Début updateMember");
-    const { photo, ...dataToUpdate } = memberData;
-    
-    let updatePayload = { ...dataToUpdate };
-    
-    if (photo instanceof File) {
-        console.log("DEBUG - Détection fichier photo dans updateMember");
+  const addMutation = useMutation({
+    ...mutationOptions,
+    mutationFn: async (memberData) => {
+      const { photo, ...dataToInsert } = memberData;
+      const newMember = await membersService.addMember({ ...dataToInsert, club_id: club.id });
+      if (photo instanceof File) {
+        const filePath = await membersService.uploadMemberPhoto(photo, club.id, newMember.id);
+        return await membersService.updateMember(newMember.id, { ...newMember, photo_url: filePath });
+      }
+      return newMember;
+    },
+  });
+
+  const updateMutation = useMutation({
+    ...mutationOptions,
+    mutationFn: async ({ id, memberData }) => {
+      const { photo, ...dataToUpdate } = memberData;
+      let updatePayload = { ...dataToUpdate };
+      if (photo instanceof File) {
         const filePath = await membersService.uploadMemberPhoto(photo, club.id, id);
         updatePayload.photo_url = filePath;
-    }
-    
-    const updated = await membersService.updateMember(id, updatePayload);
-    queryClient.invalidateQueries(['members', club?.id]);
-    return updated;
-  };
+      }
+      return await membersService.updateMember(id, updatePayload);
+    },
+  });
 
-  const deleteMember = async (id) => {
-    await membersService.deleteMember(id);
-    queryClient.invalidateQueries(['members', club?.id]);
-  };
+  const deleteMutation = useMutation({
+    ...mutationOptions,
+    mutationFn: async (id) => {
+      return await membersService.deleteMember(id);
+    },
+  });
 
   return {
     members,
     loading,
     error: error?.message || null,
-    addMember,
-    updateMember,
-    deleteMember,
-    refresh: () => queryClient.invalidateQueries(['members', club?.id]),
+    addMember: addMutation.mutateAsync,
+    updateMember: (id, memberData) => updateMutation.mutateAsync({ id, memberData }),
+    deleteMember: deleteMutation.mutateAsync,
+    refresh: () => queryClient.invalidateQueries({ queryKey }),
   };
 };

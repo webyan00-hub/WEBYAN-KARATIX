@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button/Button';
 
 // Palette cohérente
@@ -11,6 +12,8 @@ const theme = {
 };
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <section className="relative pt-40 pb-32 px-6 overflow-hidden bg-white">
       <div className="max-w-5xl mx-auto text-center flex flex-col items-center">
@@ -50,7 +53,12 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Button size="lg" className="h-14 px-10 text-lg font-bold rounded-full shadow-lg transition-all duration-300" style={{ backgroundColor: theme.primary }}>
+          <Button 
+            size="lg" 
+            className="h-14 px-10 text-lg font-bold rounded-full shadow-lg transition-all duration-300" 
+            style={{ backgroundColor: theme.primary }}
+            onClick={() => navigate('/signup')}
+          >
             Commencer l'essai gratuit
           </Button>
           <a 
